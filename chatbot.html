@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm2Bag Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat-container { width: 400px; margin: auto; border: 1px solid #ccc; padding: 10px; }
+        #chat-box { height: 300px; overflow-y: scroll; border-bottom: 1px solid #ccc; padding: 10px; }
+        #user-input { width: 80%; padding: 5px; }
+        #send-btn { padding: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <h2>Farm2Bag Chatbot</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Type a message...">
+    <button id="send-btn">Send</button>
+</div>
+
+<script>
+    document.getElementById("send-btn").addEventListener("click", sendMessage);
+    document.getElementById("user-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+        let userMessage = document.getElementById("user-input").value;
+        if (userMessage.trim() === "") return;
+
+        displayMessage("You: " + userMessage);
+        document.getElementById("user-input").value = "";
+
+        fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: "user123", message: userMessage })
+        })
+        .then(response => response.json())
+        .then(data => displayMessage("Bot: " + data.response))
+        .catch(error => console.error("Error:", error));
+    }
+
+    function displayMessage(message) {
+        let chatBox = document.getElementById("chat-box");
+        let msgDiv = document.createElement("div");
+        msgDiv.textContent = message;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
