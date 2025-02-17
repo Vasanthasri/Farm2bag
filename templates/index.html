@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart Assistant</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      height: 100vh;
+      background-color: #f4f4f4;
+      overflow: hidden;
+    }
+
+    /* Chatbot Container */
+    .chatbot-container {
+      width: 320px;
+      height: 450px;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #4CAF50, #81C784);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      transition: all 0.5s ease;
+      z-index: 1000;
+    }
+
+    .chatbot-container.fullscreen {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      bottom: 0;
+      right: 0;
+    }
+
+    /* Chatbot Header */
+    .chatbot-header {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .chatbot-header span {
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .expand-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Chatbot Body */
+    .chatbot-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .message-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      position: relative;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .bot-message {
+      background-color: #e1ffc7;
+      align-self: flex-start;
+    }
+
+    .user-message {
+      background-color: #d1e7ff;
+      align-self: flex-end;
+    }
+
+    /* Chatbot Footer */
+    .chatbot-footer {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    #voice-btn, #send-btn {
+      margin-left: 10px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #voice-btn:hover, #send-btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <!-- Chatbot Container -->
+  <div class="chatbot-container">
+    <!-- Chatbot Header -->
+    <div class="chatbot-header" onclick="toggleFullscreen()">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaYDqfHSna6KE8HmNNtQfFUUDzoHdLI-tmBg&s" alt="Chatbot Avatar" class="avatar">
+      <span>Cart Assistant</span>
+      <button class="expand-btn">⛶</button>
+    </div>
+
+    <!-- Chatbot Body -->
+    <div class="chatbot-body">
+      <div class="message-container">
+        <div class="message bot-message">Hi! How can I help you today?</div>
+      </div>
+    </div>
+
+    <!-- Chatbot Footer -->
+    <div class="chatbot-footer">
+      <input type="text" id="user-input" placeholder="Type your message...">
+      <button id="voice-btn">🎤</button>
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript for Chatbot Functionality
+    const chatbotContainer = document.querySelector('.chatbot-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const voiceBtn = document.getElementById('voice-btn');
+
+    // Toggle Fullscreen
+    function toggleFullscreen() {
+      chatbotContainer.classList.toggle('fullscreen');
+    }
+
+    // Send Message
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+      const message = userInput.value.trim();
+      if (message) {
+        addMessage(message, 'user');
+        userInput.value = '';
+
+        fetch('/process_chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => { addMessage(data.response, 'bot'); })
+        .catch(error => { addMessage("❌ Error connecting to server!", 'bot'); });
+      }
+    }
+
+    // Voice Recognition
+    let recognition;
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        voiceBtn.style.backgroundColor = '#ff4444';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+        voiceBtn.style.backgroundColor = '#4CAF50';
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        voiceBtn.style.backgroundColor = '#4CAF50';
+        addMessage("❌ Error recognizing speech. Please try again.", 'bot');
+      };
+
+      recognition.onend = () => {
+        voiceBtn.style.backgroundColor = '#4CAF50';
+      };
+
+      voiceBtn.addEventListener('click', () => {
+        if (recognition && !recognition.isStarted) {
+          recognition.start();
+        }
+      });
+    } else {
+      console.warn('Speech recognition not supported in this browser.');
+      voiceBtn.disabled = true;
+      voiceBtn.title = 'Speech recognition not supported';
+    }
+
+    // Add Message to Chat
+    function addMessage(text, sender) {
+      const messageContainer = document.querySelector('.message-container');
+      const message = document.createElement('div');
+      message.classList.add('message', `${sender}-message`);
+      message.textContent = text;
+      messageContainer.appendChild(message);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+
+      if (sender === 'bot') {
+        speak(text); // Speak the bot's response
+      }
+    }
+
+    // Text-to-Speech
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        speechSynthesis.speak(utterance);
+      } else {
+        console.warn('Speech synthesis not supported in this browser.');
+      }
+    }
+  </script>
+</body>
+</html>
