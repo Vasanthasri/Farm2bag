@@ -1,5 +1,5 @@
 
-🛒 Farm2Bag Chat Assistant – AI-Powered E-commerce Support
+## 🛒 Farm2Bag Chat Assistant – AI-Powered E-commerce Support
 An intelligent, AI-integrated e-commerce assistant that can:
 
 
