@@ -112,6 +112,8 @@ An intelligent, AI-integrated e-commerce assistant that can:
     http://localhost:5000
 
 
-<img width="1166" height="593" alt="f3" src="https://github.com/user-attachments/assets/4c327071-bac7-4520-a47c-d307cde8529d" />
-<img width="1162" height="621" alt="f2" src="https://github.com/user-attachments/assets/60234fde-03f7-4f11-9375-e989a8882d7e" />
 <img width="1163" height="622" alt="f1" src="https://github.com/user-attachments/assets/c035e401-3d23-4930-ac50-984c6dccafbf" />
+
+<img width="1166" height="593" alt="f3" src="https://github.com/user-attachments/assets/4c327071-bac7-4520-a47c-d307cde8529d" />
+
+<img width="1162" height="621" alt="f2" src="https://github.com/user-attachments/assets/60234fde-03f7-4f11-9375-e989a8882d7e" />
